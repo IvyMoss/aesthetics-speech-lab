@@ -7,16 +7,36 @@ import os
 from datetime import datetime
 import time
 
-# --- DIAGNOSTIC CHECK ---
-if "GEMINI_API_KEY" not in st.secrets:
-    st.error("❌ The app cannot find 'GEMINI_API_KEY'. Check your Secrets formatting.")
+import streamlit as st
+from streamlit_gsheets import GSheetsConnection
+import pandas as pd
+from google import genai
+from google.genai import types
+
+# --- 1. ROBUST KEY CHECK ---
+# We check the secrets manually before calling any connections
+try:
+    # Attempt to pull Gemini Key
+    api_key_val = st.secrets.get("GEMINI_API_KEY")
+    # Attempt to pull GSheet Config
+    gsheets_config = st.secrets.get("connections", {}).get("gsheets")
+
+    if not api_key_val or not gsheets_config:
+        st.error("❌ Configuration Missing. Check the Secrets box in Streamlit Settings.")
+        st.info("Ensure the first line is GEMINI_API_KEY and the section below it starts with [connections.gsheets]")
+        st.stop()
+
+    # If keys exist, proceed with setup
+    client = genai.Client(api_key=api_key_val)
+    conn = st.connection("gsheets", type=GSheetsConnection)
+    
+except Exception as e:
+    st.error(f"❌ Configuration Error: {e}")
     st.stop()
 
-if "connections" not in st.secrets or "gsheets" not in st.secrets["connections"]:
-    st.error("❌ The app cannot find the '[connections.gsheets]' section. Check your Secrets formatting.")
-    st.stop()
-
-st.success("✅ All keys found! Loading the lab...")
+# --- THE REST OF YOUR APP ---
+st.success("✅ Aesthetics Lab Loaded Successfully.")
+# ... (rest of your pages and login logic)
 
 # --- 1. ACCESS CONTROL ---
 ACCESS_CODE = "Aesthetics2024"  # Give this to your students
@@ -164,4 +184,5 @@ elif page == "Teacher Dashboard":
             st.info("The Google Sheet is currently empty. Submissions will appear here once students use the app.")
     else:
         st.warning("Please enter the teacher password in the sidebar to view student records.")
+
 
