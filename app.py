@@ -7,6 +7,17 @@ import os
 from datetime import datetime
 import time
 
+# --- DIAGNOSTIC CHECK ---
+if "GEMINI_API_KEY" not in st.secrets:
+    st.error("❌ The app cannot find 'GEMINI_API_KEY'. Check your Secrets formatting.")
+    st.stop()
+
+if "connections" not in st.secrets or "gsheets" not in st.secrets["connections"]:
+    st.error("❌ The app cannot find the '[connections.gsheets]' section. Check your Secrets formatting.")
+    st.stop()
+
+st.success("✅ All keys found! Loading the lab...")
+
 # --- 1. ACCESS CONTROL ---
 ACCESS_CODE = "Aesthetics2024"  # Give this to your students
 TEACHER_PASSWORD = "UMWAesthetics"
@@ -153,3 +164,4 @@ elif page == "Teacher Dashboard":
             st.info("The Google Sheet is currently empty. Submissions will appear here once students use the app.")
     else:
         st.warning("Please enter the teacher password in the sidebar to view student records.")
+
