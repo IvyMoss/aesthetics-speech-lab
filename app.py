@@ -6,7 +6,7 @@ import os
 from datetime import datetime
 
 # --- CONFIGURATION ---
-GEMINI_API_KEY = "AIzaSyBw9yb6KklUo9KVZ44_17r4LhQjj5DNulk"
+GEMINI_API_KEY = ""
 client = genai.Client(api_key=GEMINI_API_KEY)
 DB_FILE = "submissions_history.csv"
 
@@ -107,4 +107,5 @@ elif page == "Teacher Dashboard":
             else:
                 st.warning("No student submissions yet.")
     else:
+
         st.warning("Please enter the correct password in the sidebar to view student data.")
