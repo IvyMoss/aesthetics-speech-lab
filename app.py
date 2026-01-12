@@ -30,7 +30,7 @@ REQUIREMENTS TO CHECK:
 5. Delivery (Articulation, volume, rate).
 6. Organization (Transitions and clear purpose).
 
-TONE: Qualitative, supportive, and descriptive. Do not give a grade.
+TONE: Qualitative, supportive, and descriptive. Do not give a grade. Do make sure to be honest and give at least one thing to improve and one thing that is done well. 
 """
 
 st.set_page_config(page_title="Aesthetics Speech Lab", page_icon="🎙️")
@@ -109,3 +109,4 @@ elif page == "Teacher Dashboard":
                 st.warning("No student records found yet.")
     else:
         st.warning("Please enter the teacher password to access student data.")
+
