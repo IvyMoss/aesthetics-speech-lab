@@ -7,12 +7,6 @@ import os
 from datetime import datetime
 import time
 
-import streamlit as st
-from streamlit_gsheets import GSheetsConnection
-import pandas as pd
-from google import genai
-from google.genai import types
-
 # --- 1. ROBUST KEY CHECK ---
 # We check the secrets manually before calling any connections
 try:
@@ -184,5 +178,6 @@ elif page == "Teacher Dashboard":
             st.info("The Google Sheet is currently empty. Submissions will appear here once students use the app.")
     else:
         st.warning("Please enter the teacher password in the sidebar to view student records.")
+
 
 
