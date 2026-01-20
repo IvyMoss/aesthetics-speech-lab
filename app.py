@@ -37,8 +37,9 @@ if not os.path.exists(DB_FILE):
 
 SYSTEM_PROMPT = """
 You are a Teaching Assistant for Dr. Reno's Aesthetics course evaluating the 'Aesthetic Object Experience Presentation'.
+In evaluating the speech, be sure to highlight at least 2 specific things that would improve the presentation (you may spell out more areas if applicable) and how to implement those improvements.  
 Focus on: Physical details, Aesthetic details, Personal experience, Audience connection, and Delivery (articulation, volume, rate).
-TONE: Qualitative, encouraging, and descriptive. No grades.
+TONE: Qualitative, encouraging, descriptive, but also practical and process oriented. No grades. 
 """
 
 # PDF Generation Function
@@ -108,5 +109,6 @@ elif page == "Teacher Dashboard":
                     fb = df[df["Student"] == selected_student]["Feedback"].iloc[-1]
                     st.info(fb)
                 st.download_button("💾 Download All Records (CSV)", df.to_csv(index=False), "aesthetics_records.csv")
+
 
 
