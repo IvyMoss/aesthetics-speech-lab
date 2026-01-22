@@ -32,21 +32,18 @@ API_KEY = st.secrets.get("GEMINI_API_KEY")
 client = genai.Client(api_key=API_KEY)
 DB_FILE = "aesthetics_log.csv"
 
+# Ensure CSV exists with correct columns
 if not os.path.exists(DB_FILE):
     pd.DataFrame(columns=["Timestamp", "Student", "Object", "Feedback"]).to_csv(DB_FILE, index=False)
 
 SYSTEM_PROMPT = """
 You are a Teaching Assistant for Dr. Reno's Aesthetics course evaluating the 'Aesthetic Object Experience Presentation'.
-In evaluating the speech, be sure to highlight at least 2 specific things that would improve the presentation (you may spell out more areas if applicable) and how to implement those improvements.  
-Give an evaluation of the presentation's account of Physical details, Aesthetic details, Personal experience. In addition evaluate the speech's Audience connection and Delivery. How is the speaker's 
-articulation, volume, Pacing (Are there enough pauses for impact? Is the speed consistent?)
-Energy (Does the speaker's volume and pitch change to emphasize key points?)
-Fillers (Detect and count 'ums' and 'uhs')
-Confidence (Based on the tone and steady delivery, how confident does the speaker sound?)
-Your TONE: Qualitative, encouraging, descriptive, but also practical and process oriented. No grades. 
+In evaluating the speech, be sure to highlight at least 2 specific things that would improve the presentation and how to implement those improvements.  
+Give an evaluation of the presentation's account of Physical details, Aesthetic details, Personal experience. In addition evaluate the speech's Audience connection and Delivery.
+Your TONE: Qualitative, encouraging, descriptive, but also practical. No grades. 
 """
 
-# PDF Generation Function
+# PDF Generation Function (Fixed for Encoding Errors)
 def create_pdf(name, obj, feedback):
     pdf = FPDF()
     pdf.add_page()
@@ -58,8 +55,11 @@ def create_pdf(name, obj, feedback):
     pdf.cell(200, 10, txt=f"Object: {obj}", ln=True)
     pdf.cell(200, 10, txt=f"Date: {datetime.now().strftime('%Y-%m-%d')}", ln=True)
     pdf.ln(10)
-    pdf.multi_cell(0, 10, txt=feedback)
-    return pdf.output(dest='S').encode('latin-1', 'replace')
+    
+    # FPDF1 doesn't like UTF-8/Special characters from AI. We encode/decode to strip them.
+    clean_feedback = feedback.encode('latin-1', 'replace').decode('latin-1')
+    pdf.multi_cell(0, 10, txt=clean_feedback)
+    return pdf.output(dest='S').encode('latin-1')
 
 # --- 3. NAVIGATION ---
 st.sidebar.title("Aesthetics Lab")
@@ -81,18 +81,23 @@ if page == "Student Upload":
                 f.write(audio.getbuffer())
             
             try:
-                uploaded_file = client.files.upload(file=temp_path, config={'mime_type': f"audio/{'mpeg' if ext == 'mp3' else ext}"})
-                response = client.models.generate_content(model="gemini-2.0-flash", config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT), contents=[uploaded_file, "Evaluate my presentation."])
+                uploaded_file = client.files.upload(path=temp_path, config={'mime_type': f"audio/{'mpeg' if ext == 'mp3' else ext}"})
+                response = client.models.generate_content(
+                    model="gemini-2.0-flash", 
+                    config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT), 
+                    contents=[uploaded_file, "Evaluate my presentation."]
+                )
                 
+                feedback_text = response.text
                 st.subheader("Professor Gemini's Feedback")
-                st.markdown(response.text)
+                st.markdown(feedback_text)
                 
-                # PDF Download Button
-                pdf_data = create_pdf(name, obj, response.text)
+                # PDF Download
+                pdf_data = create_pdf(name, obj, feedback_text)
                 st.download_button(label="📄 Download Feedback as PDF", data=pdf_data, file_name=f"{name}_Aesthetics_Feedback.pdf", mime="application/pdf")
                 
                 # Log to CSV
-                new_row = pd.DataFrame([[datetime.now().strftime("%Y-%m-%d %H:%M"), name, obj, response.text]], columns=["Timestamp", "Student", "Object", "Feedback"])
+                new_row = pd.DataFrame([[datetime.now().strftime("%Y-%m-%d %H:%M"), name, obj, feedback_text]], columns=["Timestamp", "Student", "Object", "Feedback"])
                 new_row.to_csv(DB_FILE, mode='a', header=False, index=False)
                 st.success("Feedback logged successfully.")
             except Exception as e:
@@ -103,16 +108,30 @@ if page == "Student Upload":
 elif page == "Teacher Dashboard":
     st.title("👨‍🏫 Teacher Overview")
     pw = st.sidebar.text_input("Password", type="password")
+    
     if pw == TEACHER_PASSWORD:
         if os.path.exists(DB_FILE):
             df = pd.read_csv(DB_FILE)
             if not df.empty:
-                st.dataframe(df[["Timestamp", "Student", "Object"]], width=None)
-                selected_student = st.selectbox("Review Student:", df["Student"].unique())
+                st.dataframe(df[["Timestamp", "Student", "Object"]], use_container_width=True)
+                
+                # Added safety check for unique students
+                student_list = df["Student"].unique()
+                selected_student = st.selectbox("Review Student:", student_list)
+                
                 if selected_student:
-                    fb = df[df["Student"] == selected_student]["Feedback"].iloc[-1]
-                    st.info(fb)
-                st.download_button("💾 Download All Records (CSV)", df.to_csv(index=False), "aesthetics_records.csv")
+                    # Get the most recent feedback for that student
+                    student_data = df[df["Student"] == selected_student]
+                    fb = student_data["Feedback"].iloc[-1]
+                    st.info(f"**Latest Feedback for {selected_student}:**\n\n{fb}")
+                
+                csv_data = df.to_csv(index=False).encode('utf-8')
+                st.download_button("💾 Download All Records (CSV)", csv_data, "aesthetics_records.csv", "text/csv")
+            else:
+                st.warning("No student records found yet.")
+    elif pw != "":
+        st.error("Incorrect Teacher Password")
+
 
 
 
