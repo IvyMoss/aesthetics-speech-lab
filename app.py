@@ -81,7 +81,7 @@ if page == "Student Upload":
                 f.write(audio.getbuffer())
             
             try:
-                uploaded_file = client.files.upload(path=temp_path, config={'mime_type': f"audio/{'mpeg' if ext == 'mp3' else ext}"})
+                uploaded_file = client.files.upload(file=temp_path, config={'mime_type': f"audio/{'mpeg' if ext == 'mp3' else ext}"})
                 response = client.models.generate_content(
                     model="gemini-2.0-flash", 
                     config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT), 
@@ -131,6 +131,7 @@ elif page == "Teacher Dashboard":
                 st.warning("No student records found yet.")
     elif pw != "":
         st.error("Incorrect Teacher Password")
+
 
 
 
