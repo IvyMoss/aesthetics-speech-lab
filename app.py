@@ -42,6 +42,26 @@ In evaluating the speech, be sure to highlight at least 2 specific things that w
 Give an evaluation of the presentation's account of Physical details, Aesthetic details, Personal experience. In addition evaluate the speech's Audience connection and Delivery.
 Your TONE: Qualitative, encouraging, descriptive, but also practical. No grades. 
 """
+# --- NEW: EMAIL FUNCTION ---
+def send_feedback_email(student_name, object_name, feedback_text):
+    try:
+        # Pull credentials from Streamlit Secrets
+        sender = st.secrets["EMAIL_SENDER"]
+        receiver = st.secrets["EMAIL_RECEIVER"]
+        password = st.secrets["EMAIL_PASSWORD"]
+
+        msg = MIMEText(f"Student: {student_name}\nObject: {object_name}\n\nFeedback:\n{feedback_text}")
+        msg['Subject'] = f"Aesthetics Lab: {student_name}"
+        msg['From'] = sender
+        msg['To'] = receiver
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender, password)
+            server.sendmail(sender, receiver, msg.as_string())
+        return True
+    except Exception as e:
+        st.error(f"Email notification failed: {e}")
+        return False
 
 # PDF Generation Function (Fixed for Encoding Errors)
 def create_pdf(name, obj, feedback):
@@ -161,26 +181,7 @@ with st.expander("🛠️ Server File System Check (Debug)"):
     else:
         st.error(f"Could not find {DB_FILE} in the current directory.")
 # ---------------------------
-# --- NEW: EMAIL FUNCTION ---
-def send_feedback_email(student_name, object_name, feedback_text):
-    try:
-        # Pull credentials from Streamlit Secrets
-        sender = st.secrets["EMAIL_SENDER"]
-        receiver = st.secrets["EMAIL_RECEIVER"]
-        password = st.secrets["EMAIL_PASSWORD"]
 
-        msg = MIMEText(f"Student: {student_name}\nObject: {object_name}\n\nFeedback:\n{feedback_text}")
-        msg['Subject'] = f"Aesthetics Lab: {student_name}"
-        msg['From'] = sender
-        msg['To'] = receiver
-
-        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
-            server.login(sender, password)
-            server.sendmail(sender, receiver, msg.as_string())
-        return True
-    except Exception as e:
-        st.error(f"Email notification failed: {e}")
-        return False
 # --- DEBUG: TEST EMAIL BUTTON ---
 st.sidebar.markdown("---")
 if st.sidebar.button("🧪 Send Test Email"):
@@ -193,6 +194,7 @@ if st.sidebar.button("🧪 Send Test Email"):
         st.sidebar.success("Test Email Sent! Check your inbox (and Spam).")
     else:
         st.sidebar.error("Test Failed. Check the main screen for the error details.")
+
 
 
 
