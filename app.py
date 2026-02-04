@@ -182,6 +182,19 @@ def send_feedback_email(student_name, object_name, feedback_text):
     except Exception as e:
         st.error(f"Email notification failed: {e}")
         return False
+# --- DEBUG: TEST EMAIL BUTTON ---
+st.sidebar.markdown("---")
+if st.sidebar.button("🧪 Send Test Email"):
+    st.sidebar.info("Attempting to send...")
+    
+    # Use the same logic as your main function
+    success = send_feedback_email("Test Student", "Test Object", "This is a test message to verify the email connection.")
+    
+    if success:
+        st.sidebar.success("Test Email Sent! Check your inbox (and Spam).")
+    else:
+        st.sidebar.error("Test Failed. Check the main screen for the error details.")
+
 
 
 
