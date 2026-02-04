@@ -65,6 +65,12 @@ def create_pdf(name, obj, feedback):
 st.sidebar.title("Aesthetics Lab")
 page = st.sidebar.radio("Navigation", ["Student Upload", "Teacher Dashboard"])
 
+import smtplib
+from email.mime.text import MIMEText
+
+
+
+
 if page == "Student Upload":
     st.title("🎙️ Student Practice Portal")
     with st.form("speech_form"):
@@ -91,6 +97,26 @@ if page == "Student Upload":
                 feedback_text = response.text
                 st.subheader("Professor Gemini's Feedback")
                 st.markdown(feedback_text)
+                # --- INSIDE YOUR STUDENT UPLOAD BLOCK ---
+# Find the part where 'feedback_text = response.text' is called:
+
+            try:
+                uploaded_file = client.files.upload(file=temp_path, config={'mime_type': f"audio/{'mpeg' if ext == 'mp3' else ext}"})
+                response = client.models.generate_content(
+                    model="gemini-2.0-flash", 
+                    config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT), 
+                    contents=[uploaded_file, "Evaluate my presentation."]
+                )
+                
+                feedback_text = response.text
+                st.subheader("Professor Gemini's Feedback")
+                st.markdown(feedback_text)
+                
+                # --- TRIGGER EMAIL HERE ---
+                send_feedback_email(name, obj, feedback_text)
+                # --------------------------
+                
+                # Continue with PDF and CSV logging...
                 
                 # PDF Download
                 pdf_data = create_pdf(name, obj, feedback_text)
@@ -147,6 +173,27 @@ with st.expander("🛠️ Server File System Check (Debug)"):
     else:
         st.error(f"Could not find {DB_FILE} in the current directory.")
 # ---------------------------
+# --- NEW: EMAIL FUNCTION ---
+def send_feedback_email(student_name, object_name, feedback_text):
+    try:
+        # Pull credentials from Streamlit Secrets
+        sender = st.secrets["EMAIL_SENDER"]
+        receiver = st.secrets["EMAIL_RECEIVER"]
+        password = st.secrets["EMAIL_PASSWORD"]
+
+        msg = MIMEText(f"Student: {student_name}\nObject: {object_name}\n\nFeedback:\n{feedback_text}")
+        msg['Subject'] = f"Aesthetics Lab: {student_name}"
+        msg['From'] = sender
+        msg['To'] = receiver
+
+        with smtplib.SMTP_SSL("smtp.gmail.com", 465) as server:
+            server.login(sender, password)
+            server.sendmail(sender, receiver, msg.as_string())
+        return True
+    except Exception as e:
+        st.error(f"Email notification failed: {e}")
+        return False
+
 
 
 
