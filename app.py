@@ -86,18 +86,6 @@ if page == "Student Upload":
             with open(temp_path, "wb") as f:
                 f.write(audio.getbuffer())
             
-            try:
-                uploaded_file = client.files.upload(file=temp_path, config={'mime_type': f"audio/{'mpeg' if ext == 'mp3' else ext}"})
-                response = client.models.generate_content(
-                    model="gemini-2.0-flash", 
-                    config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT), 
-                    contents=[uploaded_file, "Evaluate my presentation."]
-                )
-                
-                feedback_text = response.text
-                st.subheader("Professor Gemini's Feedback")
-                st.markdown(feedback_text)
-                # --- INSIDE YOUR STUDENT UPLOAD BLOCK ---
 # Find the part where 'feedback_text = response.text' is called:
 
             try:
@@ -117,6 +105,7 @@ if page == "Student Upload":
                 # --------------------------
                 
                 # Continue with PDF and CSV logging...
+
                 
                 # PDF Download
                 pdf_data = create_pdf(name, obj, feedback_text)
@@ -193,6 +182,7 @@ def send_feedback_email(student_name, object_name, feedback_text):
     except Exception as e:
         st.error(f"Email notification failed: {e}")
         return False
+
 
 
 
