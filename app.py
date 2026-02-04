@@ -110,6 +110,21 @@ elif page == "Teacher Dashboard":
     pw = st.sidebar.text_input("Password", type="password")
     
     if pw == TEACHER_PASSWORD:
+        # --- DEBUG: FILE CHECKER ---
+with st.expander("🛠️ Server File System Check (Debug)"):
+    files = os.listdir(".")
+    st.write("Files currently on server:", files)
+    
+    if DB_FILE in files:
+        file_size = os.path.getsize(DB_FILE)
+        st.success(f"Found {DB_FILE}! Size: {file_size} bytes")
+        
+        # Emergency view of the raw file
+        with open(DB_FILE, "r") as f:
+            st.text_area("Raw CSV Content:", f.read(), height=200)
+    else:
+        st.error(f"Could not find {DB_FILE} in the current directory.")
+# ---------------------------
         if os.path.exists(DB_FILE):
             df = pd.read_csv(DB_FILE)
             if not df.empty:
@@ -131,6 +146,7 @@ elif page == "Teacher Dashboard":
                 st.warning("No student records found yet.")
     elif pw != "":
         st.error("Incorrect Teacher Password")
+
 
 
 
