@@ -100,21 +100,20 @@ if page == "Student Upload":
                 st.subheader("Professor Gemini's Feedback")
                 st.markdown(feedback_text)
                 
-                # --- TRIGGER EMAIL HERE ---
+                # 1. SEND EMAIL FIRST (The Safety Net)
                 send_feedback_email(name, obj, feedback_text)
-                # --------------------------
                 
-                # Continue with PDF and CSV logging...
+                # 2. THEN try the PDF
+                try:
+                    pdf_data = create_pdf(name, obj, feedback_text)
+                    st.download_button(label="📄 Download Feedback as PDF", data=pdf_data, file_name=f"{name}_Aesthetics_Feedback.pdf", mime="application/pdf")
+                except Exception as e:
+                    st.warning("Feedback was generated and emailed, but the PDF failed to build.")
 
-                
-                # PDF Download
-                pdf_data = create_pdf(name, obj, feedback_text)
-                st.download_button(label="📄 Download Feedback as PDF", data=pdf_data, file_name=f"{name}_Aesthetics_Feedback.pdf", mime="application/pdf")
-                
-                # Log to CSV
+                # 3. THEN try the CSV
                 new_row = pd.DataFrame([[datetime.now().strftime("%Y-%m-%d %H:%M"), name, obj, feedback_text]], columns=["Timestamp", "Student", "Object", "Feedback"])
                 new_row.to_csv(DB_FILE, mode='a', header=False, index=False)
-                st.success("Feedback logged successfully.")
+                
             except Exception as e:
                 st.error(f"Error: {e}")
             finally:
@@ -194,6 +193,7 @@ if st.sidebar.button("🧪 Send Test Email"):
         st.sidebar.success("Test Email Sent! Check your inbox (and Spam).")
     else:
         st.sidebar.error("Test Failed. Check the main screen for the error details.")
+
 
 
 
