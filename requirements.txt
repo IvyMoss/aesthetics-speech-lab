@@ -1,6 +1,7 @@
 streamlit
-google-genai
+google-genai>=0.4.0
 pandas
 fpdf
+
 
 
