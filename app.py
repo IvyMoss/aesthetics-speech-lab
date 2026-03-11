@@ -113,7 +113,7 @@ if page == "Student Upload":
             try:
                 uploaded_file = client.files.upload(file=temp_path, config={'mime_type': f"audio/{'mpeg' if ext == 'mp3' else ext}"})
                 response = client.models.generate_content(
-                    model="gemini-3.0-flash", 
+                    model="gemini-3-flash", 
                     config=types.GenerateContentConfig(system_instruction=SYSTEM_PROMPT), 
                     contents=[uploaded_file, "Evaluate my presentation."]
                 )
@@ -196,6 +196,7 @@ if st.sidebar.button("🧪 Send Test Email"):
         st.sidebar.success("Test Email Sent! Check your inbox (and Spam).")
     else:
         st.sidebar.error("Test Failed. Check the main screen for the error details.")
+
 
 
 
