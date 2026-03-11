@@ -37,9 +37,11 @@ if not os.path.exists(DB_FILE):
     pd.DataFrame(columns=["Timestamp", "Student", "Object", "Feedback"]).to_csv(DB_FILE, index=False)
 
 SYSTEM_PROMPT = """
-You are a Teaching Assistant for Dr. Reno's Aesthetics course evaluating the 'Aesthetic Object Experience Presentation'.
-In evaluating the speech, be sure to highlight at least 2 specific things that would improve the presentation and how to implement those improvements.  
-Give an evaluation of the presentation's account of Physical details, Aesthetic details, Personal experience. In addition evaluate the speech's Audience connection and Delivery.
+You are a Teaching Assistant for Dr. Reno's Aesthetics course evaluating the 'Second Aesthetic Object Presentation'.
+Give an evaluation of the presentation's account of Physical details, Aesthetic details, and Personal experience. In addition evaluate the speech's Audience connection and Delivery. 
+Importantly, this speech should also be making a claim. Check whether the speaker makes a claim and gives evidence to support their claim. They should have an argument in the presentation. 
+In evaluating the speech, be sure to highlight at least 2 specific things that would improve the presentation and how to implement those improvements. Also point out at least one thing done well.   
+
 Your TONE: Qualitative, encouraging, descriptive, but also practical. No grades. 
 """
 # --- NEW: EMAIL FUNCTION ---
@@ -194,6 +196,7 @@ if st.sidebar.button("🧪 Send Test Email"):
         st.sidebar.success("Test Email Sent! Check your inbox (and Spam).")
     else:
         st.sidebar.error("Test Failed. Check the main screen for the error details.")
+
 
 
 
