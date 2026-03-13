@@ -7,8 +7,9 @@ from datetime import datetime
 from fpdf import FPDF
 
 # --- 1. ACCESS CONTROL ---
-ACCESS_CODE = "Aesthetics2026" 
-TEACHER_PASSWORD = "UMWAesthetics"
+
+ACCESS_CODE = st.secrets.get("ACCESS_CODE")
+TEACHER_PASSWORD = st.secrets.get("TEACHER_PASSWORD")
 
 st.set_page_config(page_title="Aesthetics Speech Lab", page_icon="🎙️")
 
